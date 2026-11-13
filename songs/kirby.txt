@@ -1,0 +1,181 @@
+# Green Greens (Kirby's Dream Land)
+# Transcribed from the user's SheetsGeek letter-note pages, ♩=179, 4/4.
+# No lyrics on the sheet. Stacked D/D in m1 are octave doubles; the melody uses the upper D.
+title: Green Greens
+tempo: 179
+key: C
+time: 4/4
+lookahead: 5.5
+
+# m1 — low G ostinato, then G–D–G–B flourish (D is written as D4+D5 octaves)
+chords: G:4
+G3 s G3 s G3 s G3 s | G3 e G3 e
+G3 e | D5 s | D5 s | D5 e | G3 s | B3 s
+
+# m2
+chords: C:4
+C4 e E4 e E4 e E4 e | E4 e E4 e E4 e E4 e
+
+# m3
+chords: C:4
+C4 e E4 e E4 e E4 e | E4 e E4 e E4 e E4 e
+
+# m4
+chords: F:4
+D4 e F4 e F4 e F4 e | F4 e F4 e F4 e F4 e
+
+# m5
+chords: F:2 G:2
+r e F4 e F4 e G4 e | G4 q | G4 e. G4 s
+
+# m6
+chords: C:4
+C5 h. | C5 e. E5 s
+
+# m7
+chords: C:3 G7:1
+G5 e C6 e B5 e A5 e | G5 q | E5 e. G5 s
+
+# m8
+chords: F:2 G:2
+F5 q | D5 e. E5 s | D5 q | E5 e. D5 s
+
+# m9
+chords: C:3 G:1
+C5 h. | G4 e. G4 s
+
+# m10
+chords: C:4
+C5 h. | C5 e. E5 s
+
+# m11
+chords: C:3 G7:1
+G5 e C6 e B5 e A5 e | G5 q | E5 e. G5 s
+
+# m12
+chords: F:2 G:2
+F5 q | D5 e. E5 s | D5 q | E5 e. D5 s
+
+# m13
+chords: C:4
+C5 h. | r q
+
+# m14 — the two E's are tied on the sheet (eighth + eighth); written as a quarter
+chords: C:1 F:1 G7:1 C:1
+C5 e. C5 s | D5 e E5 q | C5 e D5 e C5 e
+
+# m15
+chords: C:4
+C4 e G4 e G4 e G4 e | G4 e G4 e G4 e G4 e
+
+# m16
+chords: C:4
+C4 e G4 e G4 e G4 e | G4 e G4 e G4 e G4 e
+
+# m17
+chords: Eb:2 Bb:2
+Eb5 q | D5 e. Eb5 s | F5 q | Eb5 e. F5 s
+
+# m18
+chords: G:2 C:2
+G5 q | F5 e. G5 s | C5 q | C5 e. D5 s
+
+# m19
+chords: Eb:2 Bb:2
+Eb5 q | D5 e. Eb5 s | F5 q | Eb5 e. F5 s
+
+# m20
+chords: G:2 C:2
+G5 h | C6 q | C5 e. D5 s
+
+# m21
+chords: Eb:2 Bb:2
+Eb5 q | D5 e. Eb5 s | F5 q | Eb5 e. F5 s
+
+# m22
+chords: G:2 C:2
+G5 q | F5 e. G5 s | C5 q | C5 e. D5 s
+
+# m23
+chords: Eb:2 Bb:2
+Eb5 q | D5 e. Eb5 s | F5 q | Eb5 e. F5 s
+
+# m24
+chords: D:2 G:2
+D5 h | G5 q | G4 e. G4 s
+
+# m25
+chords: C:4
+C5 h. | C5 e. E5 s
+
+# m26
+chords: C:3 G7:1
+G5 e C6 e B5 e A5 e | G5 q | E5 e. G5 s
+
+# m27
+chords: F:2 G:2
+F5 q | D5 e. E5 s | D5 q | E5 e. D5 s
+
+# m28
+chords: C:3 G:1
+C5 h. | G4 e. G4 s
+
+# m29
+chords: C:4
+C5 h. | C5 e. E5 s
+
+# m30
+chords: C:3 G7:1
+G5 e C6 e B5 e A5 e | G5 q | E5 e. G5 s
+
+# m31
+chords: F:2 G:2
+F5 q | D5 e. E5 s | D5 q | E5 e. D5 s
+
+# m32
+chords: C:4
+C5 h. | r q
+
+# m33 — tied E's written as a quarter, same as m14
+chords: C:1 F:1 G7:1 C:1
+C5 e. C5 s | D5 e E5 q | C5 e D5 e C5 e
+
+# m34
+chords: C:4
+C4 e G4 e G4 e G4 e | G4 e G4 e G4 e G4 e
+
+# m35
+chords: C:4
+C4 e G4 e G4 e G4 e | G4 e G4 e G4 e G4 e
+
+# m36
+chords: Eb:2 Bb:2
+Eb5 q | D5 e. Eb5 s | F5 q | Eb5 e. F5 s
+
+# m37
+chords: G:2 C:2
+G5 q | F5 e. G5 s | C5 q | C5 e. D5 s
+
+# m38
+chords: Eb:2 Bb:2
+Eb5 q | D5 e. Eb5 s | F5 q | Eb5 e. F5 s
+
+# m39
+chords: G:2 C:2
+G5 h | C6 q | C5 e. D5 s
+
+# m40
+chords: Eb:2 Bb:2
+Eb5 q | D5 e. Eb5 s | F5 q | Eb5 e. F5 s
+
+# m41
+chords: G:2 C:2
+G5 q | F5 e. G5 s | C5 q | C5 e. D5 s
+
+# m42
+chords: Eb:2 Bb:2
+Eb5 q | D5 e. Eb5 s | F5 q | Eb5 e. F5 s
+
+# m43 — end
+chords: D:2 G:2
+D5 h | G5 q | r q

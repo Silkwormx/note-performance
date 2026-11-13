@@ -1,0 +1,192 @@
+@font-face {
+  font-family: 'Fredoka';
+  src: url('../fonts/Fredoka.ttf') format('truetype');
+  font-weight: 300 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Nunito';
+  src: url('../fonts/Nunito.ttf') format('truetype');
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Noto Music';
+  src: url('../fonts/NotoMusic-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+
+:root {
+  --ink: #32251c;
+  --muted: #6a574b;
+  --paper: #f6efe4;
+  --card: #fffaf2;
+  --line: #e4d5c4;
+  --gold: #e0a93a;
+  --gold-deep: #c4841d;
+  --terracotta: #c45c3e;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: Nunito, Fredoka, sans-serif;
+}
+
+body.mode-render,
+html:has(body.mode-render) {
+  background: #000;
+  overflow: hidden;
+}
+
+#app {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px 24px 48px;
+}
+
+#app.mode-render {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+#app.mode-render > :not(.stage-wrap) { display: none !important; }
+#app.mode-render .stage-wrap {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: #000;
+  box-shadow: none;
+}
+#app.mode-render #stage {
+  display: block;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-end;
+  margin-bottom: 20px;
+}
+h1 {
+  font-family: Fredoka, Nunito, sans-serif;
+  font-weight: 650;
+  font-size: 2rem;
+  margin: 0 0 4px;
+}
+.tag { margin: 0; color: var(--muted); }
+.top-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.editor, .transport, .stage-wrap, .export-note {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 16px 18px;
+  margin-bottom: 14px;
+}
+
+.meta-row {
+  display: grid;
+  grid-template-columns: 1fr 120px 140px;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+label { display: flex; flex-direction: column; gap: 6px; font-weight: 700; font-size: 0.85rem; }
+input, select, textarea {
+  font: inherit;
+  font-weight: 600;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+}
+textarea {
+  width: 100%;
+  min-height: 200px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.92rem;
+  font-weight: 500;
+  line-height: 1.5;
+  resize: vertical;
+}
+.body-label { margin: 0; }
+.hint { margin: 10px 0 0; color: var(--muted); font-size: 0.9rem; }
+.hint code { background: #f0e6d8; padding: 1px 5px; border-radius: 4px; }
+.errors {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  background: #fde8e2;
+  color: #8a2e1c;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+.transport {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+button {
+  font-family: Fredoka, Nunito, sans-serif;
+  font-weight: 600;
+  font-size: 1rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+button.primary {
+  background: var(--terracotta);
+  color: #fff;
+}
+button.primary:hover { filter: brightness(1.05); }
+button.ghost {
+  background: #fff;
+  border-color: var(--line);
+  color: var(--ink);
+}
+button.ghost:hover { background: #f3eadc; }
+.speed { flex-direction: row; align-items: center; gap: 8px; font-weight: 700; }
+.speed select {
+  min-width: 160px;
+  padding: 6px 10px;
+  font-weight: 700;
+}
+.scrub { flex: 1; min-width: 160px; }
+.scrub input { width: 100%; padding: 0; }
+#time-label { font-variant-numeric: tabular-nums; color: var(--muted); font-weight: 700; }
+
+.stage-wrap { padding: 0; overflow: hidden; }
+#stage {
+  width: 100%;
+  height: auto;
+  display: block;
+  background: #c9d6e8;
+}
+
+.export-note pre {
+  background: #2e241e;
+  color: #f6efe4;
+  padding: 12px 14px;
+  border-radius: 10px;
+  overflow: auto;
+  font-size: 0.92rem;
+}
+.export-note p { margin: 0 0 8px; }
+
+@media (max-width: 800px) {
+  .meta-row { grid-template-columns: 1fr; }
+  .top { flex-direction: column; align-items: flex-start; }
+}

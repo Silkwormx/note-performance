@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Note Performance</title>
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+  <div id="app">
+    <header class="top">
+      <div>
+        <h1>Note Performance</h1>
+        <p class="tag">Type a song, preview the scrolling performance, export a video.</p>
+      </div>
+      <div class="top-actions">
+        <button type="button" id="btn-twinkle" class="ghost">Load Twinkle</button>
+        <button type="button" id="btn-mary" class="ghost">Load Mary</button>
+        <button type="button" id="btn-download" class="ghost">Download song.txt</button>
+      </div>
+    </header>
+
+    <section class="editor">
+      <div class="meta-row">
+        <label>Title
+          <input id="field-title" type="text" value="Twinkle Twinkle Little Star" />
+        </label>
+        <label>Tempo
+          <input id="field-tempo" type="number" min="30" max="240" step="1" value="100" />
+        </label>
+        <label>Key
+          <select id="field-key">
+            <option>C</option><option>G</option><option>D</option><option>A</option>
+            <option>E</option><option>F</option><option>Bb</option><option>Eb</option>
+            <option>Am</option><option>Em</option><option>Dm</option>
+          </select>
+        </label>
+      </div>
+      <label class="body-label">Notes
+        <textarea id="field-body" spellcheck="false" placeholder='C4 q "Twin-" | C4 q "kle" | G4 h "star"'></textarea>
+      </label>
+      <p id="parse-errors" class="errors" hidden></p>
+      <p class="hint">Pitch, duration, then an optional lyric. Use <code>q h e w</code> or dotted <code>q.</code>. Rests are <code>r q</code>. Optional chords: <code>chords: C:4 | F:2 G7:2</code>, or inline <code>[C]</code>. Bars <code>|</code> are optional. See the README for the full format.</p>
+    </section>
+
+    <section class="transport">
+      <button type="button" id="btn-play" class="primary">Play</button>
+      <button type="button" id="btn-pause" class="primary" hidden>Pause</button>
+      <button type="button" id="btn-restart" class="ghost">Restart</button>
+      <label class="speed">Speed
+        <select id="field-speed">
+          <option value="0.25">0.25× Very Slow</option>
+          <option value="0.4">0.4×</option>
+          <option value="0.5">0.5× Slow</option>
+          <option value="0.6">0.6×</option>
+          <option value="0.75">0.75× Medium</option>
+          <option value="1" selected>1× Full Speed</option>
+        </select>
+      </label>
+      <label class="scrub">
+        <input id="field-scrub" type="range" min="0" max="1" step="0.01" value="0" />
+      </label>
+      <span id="time-label">0:00.0 / 0:00.0</span>
+    </section>
+
+    <section class="stage-wrap">
+      <canvas id="stage" width="1280" height="720" aria-label="Performance preview"></canvas>
+    </section>
+
+    <section class="export-note">
+      <p>To export an MP4 (1280×720, 30 fps, with audio), run this from the project folder:</p>
+      <pre>./render.sh songs/twinkle.txt demo.mp4
+./render.sh songs/mario.txt mario.mp4 --title-slide --scale 2</pre>
+    </section>
+  </div>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

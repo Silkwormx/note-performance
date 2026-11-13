@@ -1,0 +1,19 @@
+# Mary Had a Little Lamb
+# Public domain nursery rhyme
+# Example of eighth notes, a dotted half, a rest, and chords.
+title: Mary Had a Little Lamb
+tempo: 110
+key: C
+time: 4/4
+
+chords: C:8 | G7:4 | C:4
+chords: C:8 | G7:4 | C:4
+
+E4 q "Ma-"   | D4 q "ry"    | C4 q "had"    | D4 q "a"
+E4 q "lit-"  | E4 q "tle"   | E4 h "lamb,"
+D4 q "lit-"  | D4 q "tle"   | D4 h "lamb,"
+E4 q "lit-"  | G4 q "tle"   | G4 h "lamb."
+E4 q "Ma-"   | D4 q "ry"    | C4 q "had"    | D4 q "a"
+E4 q "lit-"  | E4 q "tle"   | E4 q "lamb,"  | E4 e "its" | r e
+D4 q "fleece"| D4 q "was"   | E4 q "white"  | D4 q "as"
+C4 h. "snow." | r q

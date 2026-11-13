@@ -1,0 +1,14 @@
+{
+  "name": "note-performance",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Kid-friendly scrolling performance videos from a simple typed song format.",
+  "scripts": {
+    "start": "python3 -m http.server 8765",
+    "render": "node render.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.65.0"
+  }
+}

@@ -1,0 +1,27 @@
+# Twinkle Twinkle Little Star
+# Public domain nursery rhyme
+title: Twinkle Twinkle Little Star
+tempo: 100
+key: C
+time: 4/4
+
+# Optional chord track: name:beats. Bars are only for readability.
+chords: C:4  | F:2  C:2
+chords: C:4  | G7:2 C:2
+chords: C:2 F:2 | C:2 G7:2
+chords: C:2 F:2 | C:2 G7:2
+chords: C:4  | F:2  C:2
+chords: C:4  | G7:2 C:2
+
+C4 q "Twin-"  | C4 q "kle,"  | G4 q "twin-"  | G4 q "kle,"
+A4 q "lit-"   | A4 q "tle"   | G4 h "star,"
+F4 q "How"    | F4 q "I"     | E4 q "won-"   | E4 q "der"
+D4 q "what"   | D4 q "you"   | C4 h "are!"
+G4 q "Up"     | G4 q "a-"    | F4 q "bove"   | F4 q "the"
+E4 q "world"  | E4 q "so"    | D4 h "high,"
+G4 q "Like"   | G4 q "a"     | F4 q "dia-"   | F4 q "mond"
+E4 q "in"     | E4 q "the"   | D4 h "sky."
+C4 q "Twin-"  | C4 q "kle,"  | G4 q "twin-"  | G4 q "kle,"
+A4 q "lit-"   | A4 q "tle"   | G4 h "star,"
+F4 q "How"    | F4 q "I"     | E4 q "won-"   | E4 q "der"
+D4 q "what"   | D4 q "you"   | C4 h "are!"

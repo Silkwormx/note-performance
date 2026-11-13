@@ -1,0 +1,89 @@
+# Super Mario Bros. Main Theme
+# Transcribed from the user's piano arrangement, measures 1–20.
+# Tempo on the page is half note = 108 (quarter = 216), common time.
+# Melody is the top note of the right hand. No lyrics on the sheet.
+title: Super Mario Bros. Main Theme
+tempo: 216
+key: C
+time: 4/4
+lookahead: 5.5
+
+# m1 — hook: E E _ E _ C E (last E is a quarter). Inner voice is F#.
+chords: C:4
+E5 e E5 e r e E5 e | r e C5 e E5 q
+
+# m2
+chords: G:4
+G5 q | r q | G4 q | r q
+
+# m3 — piano, descending C-major
+chords: C:4
+C5 q. | G4 e | r e | E4 q.
+
+# m4 — tie from m3, then A–B–Bb–A over F–G–Gb–F
+chords: C:0.5 F:1 G:1 Gb:0.5 F:1
+E4 e | A4 q | B4 q | Bb4 e | A4 q
+
+# m5 — quarter-note triplet (bracket of 3 over G–E–G), then A, F, G
+chords: C:3 G:1
+G4 tq E5 tq G5 tq | A5 q | F5 e G5 e
+
+# m6
+chords: Am:1.5 G:2.5
+r e | E5 q | C5 e D5 e | B4 q.
+
+# m7 — same soft phrase as m3
+chords: C:4
+C5 q. | G4 e | r e | E4 q.
+
+# m8 — same as m4
+chords: C:0.5 F:1 G:1 Gb:0.5 F:1
+E4 e | A4 q | B4 q | Bb4 e | A4 q
+
+# m9 — same triplet figure as m5
+chords: C:3 G:1
+G4 tq E5 tq G5 tq | A5 q | F5 e G5 e
+
+# m10 — same as m6
+chords: Am:1.5 G:2.5
+r e | E5 q | C5 e D5 e | B4 q.
+
+# m11 — forte, descending chromatic in thirds (top notes G F# F E E)
+chords: C:2 F:1 C:1
+r q | G5 e F#5 e F5 e | E5 q E5 e
+
+# m12 — F#–G–C, then A–C–D. First dyad is written with two sharps (F#/D#).
+chords: F:2 C:1 F:1
+r e | F#4 e G4 e C5 e | r e | A4 e C5 e D5 e
+
+# m13 — same chromatic run as m11; last eighth is D (not E) going into the high C
+chords: C:2 F:2
+r q | G5 e F#5 e F5 e | E5 q D5 e
+
+# m14 — high C6 (with G5 under it on the page)
+chords: C:3 G:1
+r e | C6 q C6 e | C6 h
+
+# m15 — same as m11
+chords: C:2 F:1 C:1
+r q | G5 e F#5 e F5 e | E5 q E5 e
+
+# m16 — same as m12
+chords: F:2 C:1 F:1
+r e | F#4 e G4 e C5 e | r e | A4 e C5 e D5 e
+
+# m17 — Ab cadence (Eb + A# on the page, over Ab in the left hand), then D over Ab
+chords: C:1 Ab:3
+r q | Eb5 q | r e | D5 q.
+
+# m18 — C major half note, then rest
+chords: C:4
+C5 h | r h
+
+# m19 — same as m11
+chords: C:2 F:1 C:1
+r q | G5 e F#5 e F5 e | E5 q E5 e
+
+# m20 — same as m12
+chords: F:2 C:1 F:1
+r e | F#4 e G4 e C5 e | r e | A4 e C5 e D5 e

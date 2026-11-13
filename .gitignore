@@ -1,0 +1,13 @@
+node_modules/
+.tmp-frames/
+*.wav
+.DS_Store
+verify/
+sheets/
+assets/reference/
+demo.mp4
+kirby.mp4
+demo_poster.png
+demo_strip.jpg
+kirby_poster.png
+kirby_strip.jpg

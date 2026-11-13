@@ -1,0 +1,147 @@
+@font-face {
+  font-family: 'Fredoka';
+  src: url('../fonts/Fredoka.ttf') format('truetype');
+  font-weight: 300 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Nunito';
+  src: url('../fonts/Nunito.ttf') format('truetype');
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Noto Music';
+  src: url('../fonts/NotoMusic-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+
+:root {
+  --ink: #f4fffd;
+  --muted: #b7c4c8;
+  --bar: #161c22;
+  --bar-2: #1f2830;
+  --line: #2c3a44;
+  --neon: #1fd8ff;
+  --gold: #e0a93a;
+  --paper: #0e1418;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: Nunito, Fredoka, system-ui, sans-serif;
+  min-height: 100%;
+}
+body { min-height: 100dvh; }
+
+#player {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+#stage {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #000;
+  aspect-ratio: 16 / 9;
+  max-height: calc(100dvh - 148px);
+  margin: 0 auto;
+  object-fit: contain;
+}
+
+.bar {
+  flex: 0 0 auto;
+  background: linear-gradient(180deg, var(--bar-2), var(--bar));
+  border-top: 1px solid var(--line);
+  padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+button, .toggle {
+  appearance: none;
+  border: 1px solid #3a4a54;
+  background: #243038;
+  color: var(--ink);
+  font-family: Fredoka, Nunito, sans-serif;
+  font-weight: 650;
+  font-size: 0.95rem;
+  padding: 10px 14px;
+  border-radius: 999px;
+  min-height: 44px;
+  cursor: pointer;
+  line-height: 1;
+}
+button:hover, .toggle:hover { border-color: var(--neon); }
+button:disabled { opacity: 0.4; cursor: default; }
+button.primary {
+  background: #148fa3;
+  border-color: #1fd8ff;
+  color: #f4fffd;
+}
+button.active, .toggle[aria-pressed="true"] {
+  background: #1fd8ff;
+  color: #102028;
+  border-color: #b8f6ff;
+}
+
+.speeds, .pages { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.speeds button, .pages button { min-width: 64px; padding: 10px 12px; }
+
+.label {
+  font-weight: 800;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-right: 4px;
+}
+
+#page-label {
+  font-weight: 800;
+  min-width: 7.5rem;
+  text-align: center;
+  color: #f4fffd;
+}
+
+#time-label {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.home-use {
+  margin: 0;
+  padding: 0 12px 8px;
+  text-align: center;
+  color: #8a969c;
+  font-size: 0.75rem;
+}
+
+@media (max-width: 720px) {
+  button, .toggle { font-size: 0.88rem; padding: 9px 12px; }
+  #stage { max-height: calc(100dvh - 196px); }
+}
+
+.home-use a { color: #1fd8ff; }
