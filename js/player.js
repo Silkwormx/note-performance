@@ -484,7 +484,9 @@ async function loadSongEntry(entry) {
 
 async function loadSongList() {
   const lists = [];
-  for (const url of ['songs/index.json', 'songs/local.json']) {
+  // songs/local.json (git-ignored) only exists on your own computer.
+  const local = /^(localhost|127\.|192\.168\.|10\.|\[::1\])/.test(location.hostname);
+  for (const url of local ? ['songs/index.json', 'songs/local.json'] : ['songs/index.json']) {
     try {
       const res = await fetch(url, { cache: 'no-cache' });
       if (res.ok) lists.push(...(await res.json()));
