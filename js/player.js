@@ -7,12 +7,16 @@ import {
   setViewOptions,
   speedLabelFor,
 } from './draw.js';
-import { createLiveSynth } from './synth.js';
+import { createPiano, PIANO_CREDIT } from './piano.js';
+import { readMusicXmlFile, musicXmlToSong } from './musicxml.js';
 
 const TITLE_AT_REST = true;
 const BARS_PER_PAGE = 4;
 const TAIL_BEATS = 2;
 const SPEEDS = [0.25, 0.5, 0.75, 1];
+// Audio is scheduled this far ahead (wall seconds) so notes land exactly on time.
+const SCHEDULE_AHEAD = 0.12;
+const params = new URLSearchParams(location.search);
 
 const els = {
   canvas: document.getElementById('stage'),
@@ -26,9 +30,14 @@ const els = {
   loop: document.getElementById('btn-loop'),
   playPage: document.getElementById('btn-play-page'),
   pageLabel: document.getElementById('page-label'),
+  songSelect: document.getElementById('song-select'),
+  open: document.getElementById('btn-open'),
+  file: document.getElementById('file-input'),
+  status: document.getElementById('song-status'),
+  credit: document.getElementById('credit'),
 };
 
-const synth = createLiveSynth();
+const synth = createPiano({ onLoad: () => setStatus(state.statusText) });
 const state = {
   song: parseSong('title: Untitled\ntempo: 100\nkey: C\n'),
   time: 0,
@@ -40,6 +49,13 @@ const state = {
   loopPage: false,
   pages: [],
   ready: false,
+  // audio clock anchor: songTime = anchorSong + (ctxNow - anchorCtx) * speed
+  anchorCtx: null,
+  anchorSong: 0,
+  scheduledUntil: 0,
+  statusText: '',
+  songs: [],
+  songId: '',
 };
 
 function spb() {
@@ -155,7 +171,27 @@ function inPlayWindow(startBeat) {
   return startBeat >= win.startBeat - 1e-6 && startBeat < win.endBeat - 1e-6;
 }
 
-function triggerBetween(t0, t1) {
+function audioRunning() {
+  const T = window.Tone;
+  return !!(T && T.getContext().rawContext.state === 'running');
+}
+
+/** Pin the song clock to the audio clock at the current song time. */
+function reanchor({ keepSchedule = false } = {}) {
+  state.anchorCtx = audioRunning() ? synth.now() : null;
+  state.anchorSong = state.time;
+  if (!keepSchedule) state.scheduledUntil = state.time;
+}
+
+/** AudioContext time at which a song time should be heard. */
+function ctxTimeFor(songT) {
+  if (state.anchorCtx == null) return undefined;
+  const t = state.anchorCtx + (songT - state.anchorSong) / state.speed - synth.latency();
+  return Math.max(synth.now(), t);
+}
+
+/** Schedule every click, note and chord whose start is in (t0, t1] (song seconds). */
+function scheduleBetween(t0, t1) {
   const beatSec = spb();
   const count = ci();
   const speed = state.speed;
@@ -163,7 +199,7 @@ function triggerBetween(t0, t1) {
 
   for (let b = 0; b < count; b += 1) {
     const t = win.countInAt + b * beatSec;
-    if (t0 < t && t1 >= t) synth.click(undefined, b === 0);
+    if (t0 < t && t1 >= t) synth.click(ctxTimeFor(t), b === 0);
   }
 
   for (const ev of state.song.events) {
@@ -171,7 +207,7 @@ function triggerBetween(t0, t1) {
     if (!inPlayWindow(ev.startBeat)) continue;
     const t = (count + ev.startBeat) * beatSec;
     if (t0 < t && t1 >= t) {
-      synth.bell(midiToFreq(ev.midi), (ev.beats * beatSec) / speed, undefined, 0.22);
+      synth.bell(midiToFreq(ev.midi), (ev.beats * beatSec) / speed, ctxTimeFor(t), 0.22, ev.midi);
     }
   }
 
@@ -180,13 +216,15 @@ function triggerBetween(t0, t1) {
     if (!inPlayWindow(ch.startBeat)) continue;
     const t = (count + ch.startBeat) * beatSec;
     if (t0 < t && t1 >= t) {
-      synth.pad(chordMidis(ch), (ch.beats * beatSec) / speed);
+      synth.pad(chordMidis(ch), (ch.beats * beatSec) / speed, ctxTimeFor(t));
     }
   }
 }
 
+/** After play/seek/speed change: silence, re-anchor, and sound what is mid-note now. */
 function retriggerActive() {
   synth.stopAll();
+  reanchor();
   const beatSec = spb();
   const count = ci();
   const songTime = state.time - count * beatSec;
@@ -196,8 +234,8 @@ function retriggerActive() {
     if (!inPlayWindow(ev.startBeat)) continue;
     const start = ev.startBeat * beatSec;
     const end = start + ev.beats * beatSec;
-    if (songTime >= start && songTime < end) {
-      synth.bell(midiToFreq(ev.midi), (end - songTime) / speed, undefined, 0.22);
+    if (songTime > start + 1e-4 && songTime < end) {
+      synth.bell(midiToFreq(ev.midi), (end - songTime) / speed, undefined, 0.22, ev.midi);
     }
   }
   for (const ch of state.song.chords || []) {
@@ -205,11 +243,13 @@ function retriggerActive() {
     if (!inPlayWindow(ch.startBeat)) continue;
     const start = ch.startBeat * beatSec;
     const end = start + ch.beats * beatSec;
-    if (songTime >= start && songTime < end - 0.02) {
+    if (songTime > start + 1e-4 && songTime < end - 0.02) {
       const remain = end - songTime;
       if (remain > 0) synth.pad(chordMidis(ch), remain / speed);
     }
   }
+  // Events exactly at the current time (e.g. the first beat) are picked up by the scheduler.
+  state.scheduledUntil = state.time - 1e-6;
 }
 
 function play() {
@@ -298,14 +338,21 @@ function finishOrLoop() {
 
 function loop(ts) {
   if (state.playing) {
-    if (state.lastTs != null) {
-      const dt = (ts - state.lastTs) / 1000;
-      const t0 = state.time;
-      const end = playEndTime();
-      state.time = Math.min(end, t0 + dt * state.speed);
-      triggerBetween(t0, state.time);
-      if (state.time >= end - 0.0005) finishOrLoop();
+    const end = playEndTime();
+    if (state.anchorCtx == null && audioRunning() && state.lastTs != null) reanchor({ keepSchedule: true });
+    let next = state.time;
+    if (state.anchorCtx != null) {
+      next = state.anchorSong + (synth.now() - state.anchorCtx) * state.speed;
+    } else if (state.lastTs != null) {
+      next = state.time + ((ts - state.lastTs) / 1000) * state.speed;
     }
+    state.time = Math.min(end, Math.max(state.time, next));
+    const horizon = Math.min(end, state.time + SCHEDULE_AHEAD * state.speed);
+    if (horizon > state.scheduledUntil) {
+      scheduleBetween(state.scheduledUntil, horizon);
+      state.scheduledUntil = horizon;
+    }
+    if (state.time >= end - 0.0005) finishOrLoop();
     if (state.playing) state.lastTs = ts;
     updateChrome();
   }
@@ -335,6 +382,23 @@ function wireUi() {
     updateChrome();
   });
   els.playPage?.addEventListener('click', () => playPage());
+  els.songSelect?.addEventListener('change', () => {
+    const entry = state.songs.find((s) => s.id === els.songSelect.value);
+    if (entry) loadSongEntry(entry).catch((e) => setStatus(e.message));
+  });
+  els.open?.addEventListener('click', () => els.file?.click());
+  els.file?.addEventListener('change', () => {
+    const f = els.file.files?.[0];
+    if (f) openFile(f);
+    els.file.value = '';
+  });
+  // Drop a file anywhere on the player.
+  window.addEventListener('dragover', (e) => e.preventDefault());
+  window.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const f = e.dataTransfer?.files?.[0];
+    if (f) openFile(f);
+  });
 
   window.addEventListener('keydown', (e) => {
     if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
@@ -357,18 +421,104 @@ function wireUi() {
   });
 }
 
-async function loadMario() {
-  const res = await fetch('songs/mario.txt');
-  if (!res.ok) throw new Error(`Could not load song (${res.status})`);
-  const text = await res.text();
-  state.song = parseSong(text);
+function setStatus(text) {
+  state.statusText = text || '';
+  if (!els.status) return;
+  const piano = synth.isLoaded() ? '' : 'Loading piano sound…';
+  els.status.textContent = [state.statusText, piano].filter(Boolean).join('  ·  ');
+}
+
+function useSong(song, { id = '', status = '' } = {}) {
+  synth.stopAll();
+  state.playing = false;
+  state.song = song;
   state.pages = songPages(state.song, BARS_PER_PAGE);
   state.pageIndex = 0;
   state.time = 0;
   state.mode = 'song';
+  state.songId = id;
+  document.title = `${song.meta.title || 'Song'} — Practice Player`;
+  const notes = [];
+  if (song.meta.chordsGuessed) notes.push('Chords are a best guess from the notes');
+  if (song.errors?.length) notes.push(`${song.errors.length} line(s) could not be read`);
+  setStatus([status, ...notes].filter(Boolean).join('  ·  '));
+  if (els.songSelect) {
+    const has = [...els.songSelect.options].some((o) => o.value === id);
+    if (!has && id) {
+      const opt = document.createElement('option');
+      opt.value = id;
+      opt.textContent = song.meta.title || id;
+      els.songSelect.appendChild(opt);
+    }
+    if (id) els.songSelect.value = id;
+  }
+  applyViewOptions();
+  updateChrome();
+  draw();
 }
 
-window.MarioPlayer = {
+/** Text in the song format, or MusicXML (.musicxml/.xml/.mxl). */
+async function songFromBytes(bytes, filename) {
+  const lower = filename.toLowerCase();
+  if (/\.(musicxml|xml|mxl)$/.test(lower)) {
+    const xml = await readMusicXmlFile(bytes, filename);
+    const { text, info } = musicXmlToSong(xml, { filename });
+    const song = parseSong(text);
+    song.sourceText = text;
+    song.importInfo = info;
+    return song;
+  }
+  const text = new TextDecoder('utf-8').decode(bytes);
+  const song = parseSong(text);
+  song.sourceText = text;
+  return song;
+}
+
+async function loadSongEntry(entry) {
+  const res = await fetch(entry.file);
+  if (!res.ok) throw new Error(`Could not load ${entry.file} (${res.status})`);
+  const bytes = new Uint8Array(await res.arrayBuffer());
+  const song = await songFromBytes(bytes, entry.file);
+  useSong(song, { id: entry.id, status: entry.note || '' });
+}
+
+async function loadSongList() {
+  const lists = [];
+  for (const url of ['songs/index.json', 'songs/local.json']) {
+    try {
+      const res = await fetch(url, { cache: 'no-cache' });
+      if (res.ok) lists.push(...(await res.json()));
+    } catch {
+      /* optional */
+    }
+  }
+  state.songs = lists;
+  if (els.songSelect) {
+    els.songSelect.innerHTML = '';
+    for (const s of lists) {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = s.title;
+      els.songSelect.appendChild(opt);
+    }
+  }
+  return lists;
+}
+
+async function openFile(file) {
+  try {
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    const song = await songFromBytes(bytes, file.name);
+    if (!song.events.length) throw new Error('No notes found in that file.');
+    const w = song.importInfo?.warnings?.filter((x) => !/best guess/.test(x)) || [];
+    useSong(song, { id: `file:${file.name}`, status: `Opened ${file.name}${w.length ? ` (${w.length} note${w.length > 1 ? 's' : ''}: ${w[0]})` : ''}` });
+  } catch (err) {
+    console.error(err);
+    setStatus(`Couldn't open ${file.name}: ${err.message}`);
+  }
+}
+
+const api = {
   ready: false,
   get state() { return state; },
   play: playFullSong,
@@ -384,15 +534,35 @@ window.MarioPlayer = {
   draw,
   canvas: () => els.canvas,
   song: () => state.song,
+  synth,
+  loadSongText(text, id = 'text') {
+    const song = parseSong(text);
+    song.sourceText = text;
+    useSong(song, { id });
+  },
+  async loadSongBytes(bytes, filename) {
+    const song = await songFromBytes(bytes, filename);
+    useSong(song, { id: `file:${filename}` });
+    return song;
+  },
+  loadSongById: (id) => loadSongEntry(state.songs.find((s) => s.id === id)),
+  pianoLoaded: () => synth.isLoaded(),
 };
+window.Player = api;
+window.MarioPlayer = api; // older scripts
 
 async function boot() {
   sizeCanvas();
   wireUi();
+  if (els.credit) els.credit.textContent = PIANO_CREDIT;
   try {
-    await loadMario();
+    const list = await loadSongList();
+    const want = params.get('song') || document.body.dataset.song || list[0]?.id;
+    const entry = list.find((s) => s.id === want) || list[0];
+    if (entry) await loadSongEntry(entry);
   } catch (err) {
     console.error(err);
+    setStatus(`Couldn't load the song: ${err.message}`);
   }
   await document.fonts.ready;
   await whenAssetsReady();
@@ -401,7 +571,7 @@ async function boot() {
   updateChrome();
   draw();
   state.ready = true;
-  window.MarioPlayer.ready = true;
+  api.ready = true;
   requestAnimationFrame(loop);
 }
 

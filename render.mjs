@@ -8,6 +8,7 @@ import { chromium } from 'playwright';
 import { parseSong, songDurationSec } from './js/parser.js';
 import { chordMidis } from './js/music.js';
 import { writeSongWav, writeSoftPadWav, writeSilenceWav, concatWavs } from './js/wav.js';
+import { writePianoSongWav, writePianoSlideWav } from './js/pianowav.js';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const TYPES = {
@@ -48,6 +49,7 @@ function parseArgs(argv) {
     titleSeconds: 5.5,
     cardSeconds: 2.2,
     speeds: null,
+    sound: 'piano',
     song: 'songs/twinkle.txt',
     out: 'demo.mp4',
   };
@@ -61,6 +63,7 @@ function parseArgs(argv) {
     else if (a === '--scale') opts.scale = Number(argv[++i]);
     else if (a === '--label') opts.label = String(argv[++i]);
     else if (a === '--title-slide') opts.titleSlide = true;
+    else if (a === '--sound') opts.sound = String(argv[++i]);
     else if (a === '--title-seconds') opts.titleSeconds = Number(argv[++i]);
     else if (a === '--card-seconds') opts.cardSeconds = Number(argv[++i]);
     else if (a === '--speeds') {
@@ -158,7 +161,7 @@ async function render() {
   const opts = parseArgs(process.argv.slice(2));
   if (opts.help) {
     console.log(
-      'Usage: node render.mjs [song.txt] [out.mp4] [--width 1280] [--height 720] [--fps 30] [--speed 1] [--scale 2] [--label "Full Speed"] [--title-slide] [--speeds 0.5,0.75,1]',
+      'Usage: node render.mjs [song.txt] [out.mp4] [--width 1280] [--height 720] [--fps 30] [--speed 1] [--scale 2] [--label "Full Speed"] [--title-slide] [--speeds 0.5,0.75,1] [--sound piano|bell]',
     );
     return;
   }
@@ -193,10 +196,12 @@ async function render() {
   const padMidis = firstChord ? chordMidis(firstChord) : [48, 52, 55];
   sections.forEach((sec, i) => {
     const part = join(tmp, `audio_${String(i).padStart(2, '0')}.wav`);
+    const piano = opts.sound !== 'bell';
     if (sec.type === 'song') {
-      writeSongWav(song, part, { tailBeats: sec.tailBeats, speed: sec.speed });
-    } else if (sec.type === 'title') {
-      writeSoftPadWav(part, sec.duration, padMidis);
+      if (piano) writePianoSongWav(song, part, { tailBeats: sec.tailBeats, speed: sec.speed });
+      else writeSongWav(song, part, { tailBeats: sec.tailBeats, speed: sec.speed });
+    } else if (piano) {
+      writePianoSlideWav(part, sec.duration, padMidis);
     } else {
       writeSoftPadWav(part, sec.duration, padMidis);
     }

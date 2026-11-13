@@ -4,14 +4,27 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Note Player" />
   <meta name="theme-color" content="#0e1418" />
-  <title>Super Mario Bros. Main Theme — Practice Player</title>
+  <title>Practice Player</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="assets/icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
   <link rel="stylesheet" href="css/player.css" />
 </head>
 <body>
   <div id="player">
-    <canvas id="stage" width="1280" height="720" aria-label="Mario performance"></canvas>
+    <canvas id="stage" width="1280" height="720" aria-label="Song performance"></canvas>
     <div class="bar" id="controls">
+      <div class="row">
+        <span class="label">Song</span>
+        <select id="song-select" aria-label="Choose a song"></select>
+        <button type="button" id="btn-open">Open song…</button>
+        <input type="file" id="file-input" accept=".musicxml,.xml,.mxl,.txt,application/vnd.recordare.musicxml+xml,application/vnd.recordare.musicxml" hidden />
+        <span id="song-status" class="status" aria-live="polite"></span>
+      </div>
       <div class="row">
         <button type="button" id="btn-play" class="primary">Play</button>
         <button type="button" id="btn-pause" class="primary" hidden>Pause</button>
@@ -29,15 +42,22 @@
         <span class="label">Practice</span>
         <div class="pages" role="group" aria-label="Page practice">
           <button type="button" id="btn-prev">Prev</button>
-          <span id="page-label">Page 1 of 5</span>
+          <span id="page-label">Page 1 of 1</span>
           <button type="button" id="btn-next">Next</button>
           <button type="button" id="btn-loop" class="toggle" aria-pressed="false">Loop this page</button>
           <button type="button" id="btn-play-page">Play page</button>
         </div>
       </div>
     </div>
-    <p class="home-use">For home or personal practice only. Not for posting, sale, or an app listing. <a href="editor.html">Song editor</a></p>
+    <p class="home-use">Open a MusicXML file (.musicxml, .xml or .mxl) from MuseScore or another notation app, or pick a demo song. Works offline once loaded. <a href="editor.html">Song editor</a> · <span id="credit"></span></p>
   </div>
+  <script src="js/vendor/tone.js"></script>
+  <script src="js/vendor/jszip.min.js"></script>
   <script type="module" src="js/player.js"></script>
+  <script>
+    if ('serviceWorker' in navigator && location.protocol !== 'file:' && !/[?&]nosw/.test(location.search)) {
+      navigator.serviceWorker.register('sw.js').catch((e) => console.warn('Offline cache not available', e));
+    }
+  </script>
 </body>
 </html>

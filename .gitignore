@@ -11,3 +11,14 @@ demo_poster.png
 demo_strip.jpg
 kirby_poster.png
 kirby_strip.jpg
+# Home/personal-use arrangements stay local (not public domain)
+mario.mp4
+mario_poster.png
+mario_strip.jpg
+mario_player.html
+songs/mario.txt
+songs/kirby.txt
+songs/local.json
+# Downloaded test files and scan experiments
+tests/external/
+scan-out/

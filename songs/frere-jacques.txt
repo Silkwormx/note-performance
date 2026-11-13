@@ -1,0 +1,16 @@
+# Frere Jacques - traditional, public domain
+# Encoded for Note Performance (CC0). In F major (one flat: B-flat).
+# No chord track on purpose: the MusicXML demo shows the "best guess" chords.
+title: Frère Jacques
+tempo: 104
+key: F
+time: 4/4
+
+F4 q "Frè-" | G4 q "re" | A4 q "Jac-" | F4 q "ques,"
+F4 q "Frè-" | G4 q "re" | A4 q "Jac-" | F4 q "ques,"
+A4 q "Dor-" | Bb4 q "mez-" | C5 h "vous?"
+A4 q "Dor-" | Bb4 q "mez-" | C5 h "vous?"
+C5 e "Son-" | D5 e "nez" | C5 e "les" | Bb4 e "ma-" | A4 q "ti-" | F4 q "nes,"
+C5 e "Son-" | D5 e "nez" | C5 e "les" | Bb4 e "ma-" | A4 q "ti-" | F4 q "nes,"
+F4 q "Ding," | C4 q "dang," | F4 h "dong."
+F4 q "Ding," | C4 q "dang," | F4 h "dong."

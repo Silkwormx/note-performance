@@ -1,7 +1,9 @@
 import { parseSong, songDurationSec, countInBeats } from './parser.js';
 import { midiToFreq, chordMidis } from './music.js';
 import { drawFrame, whenAssetsReady, setViewOptions, speedLabelFor, drawTitleSlide, drawSpeedCard } from './draw.js';
-import { createLiveSynth } from './synth.js';
+import { createPiano } from './piano.js';
+import { readMusicXmlFile, musicXmlToSong } from './musicxml.js';
+import { songToMusicXml } from './musicxml-export.js';
 
 const params = new URLSearchParams(location.search);
 const renderMode = params.get('mode') === 'render';
@@ -24,9 +26,12 @@ const els = {
   loadTwinkle: document.getElementById('btn-twinkle'),
   loadMary: document.getElementById('btn-mary'),
   download: document.getElementById('btn-download'),
+  openXml: document.getElementById('btn-open-xml'),
+  fileXml: document.getElementById('file-xml'),
+  downloadXml: document.getElementById('btn-download-xml'),
 };
 
-const synth = createLiveSynth();
+const synth = renderMode ? { ensure() {}, bell() {}, click() {}, pad() {}, cutPad() {}, stopAll() {}, now: () => 0 } : createPiano();
 const state = {
   song: parseSong('title: Untitled\ntempo: 100\nkey: C\n'),
   time: 0,
@@ -41,13 +46,14 @@ function headerAndBodyFromForm() {
   const tempo = els.tempo?.value || '100';
   const key = els.key?.value || 'C';
   const body = els.body?.value || '';
-  return `title: ${title}\ntempo: ${tempo}\nkey: ${key}\ntime: 4/4\n\n${body}`;
+  const time = /^\s*time\s*:/im.test(body) ? '' : 'time: 4/4\n';
+  return `title: ${title}\ntempo: ${tempo}\nkey: ${key}\n${time}\n${body}`;
 }
 
 function songBodyOnly(text) {
   return String(text)
     .split(/\r?\n/)
-    .filter((line) => !/^(title|tempo|key|time)\s*:/i.test(line.trim()))
+    .filter((line) => !/^(title|tempo|key)\s*:/i.test(line.trim()))
     .join('\n')
     .replace(/^\s+/, '');
 }
@@ -310,6 +316,43 @@ function wireUi() {
     const safe = (state.song.meta.title || 'song').replace(/[^\w\- ]+/g, '').trim() || 'song';
     a.href = URL.createObjectURL(blob);
     a.download = `${safe}.txt`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+
+  els.openXml?.addEventListener('click', () => els.fileXml?.click());
+  els.fileXml?.addEventListener('change', async () => {
+    const f = els.fileXml.files?.[0];
+    els.fileXml.value = '';
+    if (!f) return;
+    try {
+      const bytes = new Uint8Array(await f.arrayBuffer());
+      let text;
+      if (/\.(musicxml|xml|mxl)$/i.test(f.name)) {
+        text = musicXmlToSong(await readMusicXmlFile(bytes, f.name), { filename: f.name }).text;
+      } else {
+        text = new TextDecoder().decode(bytes);
+      }
+      if (els.key && !/^\s*key\s*:\s*(C|G|D|A|E|F|Bb|Eb|Am|Em|Dm)\s*$/im.test(text)) {
+        const k = text.match(/^\s*key\s*:\s*(\S+)/im)?.[1];
+        if (k && ![...els.key.options].some((o) => o.value === k)) els.key.add(new Option(k, k));
+      }
+      if (els.body) els.body.blur();
+      applySong(text);
+    } catch (err) {
+      if (els.errors) {
+        els.errors.hidden = false;
+        els.errors.textContent = `Couldn't open ${f.name}: ${err.message}`;
+      }
+    }
+  });
+  els.downloadXml?.addEventListener('click', () => {
+    const xml = songToMusicXml(state.song);
+    const blob = new Blob([xml], { type: 'application/vnd.recordare.musicxml+xml' });
+    const a = document.createElement('a');
+    const safe = (state.song.meta.title || 'song').replace(/[^\w\- ]+/g, '').trim() || 'song';
+    a.href = URL.createObjectURL(blob);
+    a.download = `${safe}.musicxml`;
     a.click();
     URL.revokeObjectURL(a.href);
   });

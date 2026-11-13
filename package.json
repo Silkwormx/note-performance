@@ -1,14 +1,23 @@
 {
   "name": "note-performance",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
-  "description": "Kid-friendly scrolling performance videos from a simple typed song format.",
+  "description": "Kid-friendly colored-note piano practice player: MusicXML import, real piano sound, offline PWA, and video export.",
   "scripts": {
     "start": "python3 -m http.server 8765",
-    "render": "node render.mjs"
+    "render": "node render.mjs",
+    "test": "node --test tests/musicxml.test.mjs",
+    "test:browser": "node tests/browser-test.mjs",
+    "build:sw": "node tools/build-sw.mjs",
+    "build:demos": "node tools/make-demo-musicxml.mjs"
   },
   "dependencies": {
-    "playwright": "^1.65.0"
+    "jszip": "^3.10.2",
+    "playwright": "^1.65.0",
+    "tone": "^15.1.22"
+  },
+  "devDependencies": {
+    "@xmldom/xmldom": "^0.9.12"
   }
 }

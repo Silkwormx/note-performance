@@ -1,38 +1,57 @@
 # Note Performance
 
-A small teacher tool that turns a typed song into a kid-friendly **performance video**: colored notes scroll right-to-left across a treble staff toward a neon-blue hit line, with optional chord-duration bars in a lane below the staff, a "READY" count-in, and bell-like tones over a soft chord pad. A dimmed, softly blurred background image can sit behind a translucent staff panel so the notes stay easy to read.
+A small teacher tool that turns a typed song into a kid-friendly **performance video**: colored notes scroll right-to-left across a treble staff toward a neon-blue hit line, with optional chord-duration bars in a lane below the staff, a "READY" count-in, and a real piano sound (melody plus soft chords). A dimmed, softly blurred background image can sit behind a translucent staff panel so the notes stay easy to read.
 
 The scrolling colored-notes idea is inspired by classroom performance videos. The layout is original. The default background is a misty floating-island scene (kept quiet behind the staff); a painted meadow at sundown remains as a fallback.
 
-## Preview in the browser
+## Practice player (site root)
 
-From this folder:
+Live at **https://silkwormx.github.io/note-performance/**. It works on a phone, a tablet or a computer, and it keeps working offline once it has loaded.
 
-```bash
-./serve.sh
-```
+- **Real piano sound.** Notes and chords play through Tone.js with the Salamander Grand Piano samples, which are bundled in `assets/piano/`. Melody notes get a soft 0.9-second release and a little room reverb. Chords are struck softly with a tiny roll and held only for their own length.
+- **Tight timing at every speed.** The song clock follows the audio clock, and each note is scheduled about 0.1 s ahead at an exact time, so the notes, the lit piano keys and the sound stay together at 0.25×, 0.5×, 0.75× and 1×.
+- **Open song…** loads a MusicXML file (`.musicxml`, `.xml`, or compressed `.mxl`) from MuseScore, Finale, Sibelius, Dorico, Noteflight or a scanning app. You can also drag a file onto the page. `.txt` songs in the format below work too. See [MusicXML import](#musicxml-import).
+- **Song picker** with public-domain demos: Twinkle Twinkle, Mary Had a Little Lamb (a compressed `.mxl`), Ode to Joy, and Frère Jacques (which has no chord symbols, so its chords are guessed).
+- **Kept from before:** pitch-colored notes on a treble staff, sharps and flats in a deeper shade with a white outline, the neon-blue hit line, the chord lane at the bottom (dark while held, pale otherwise), the C3–C7 piano that lights up, the title slide, and 4-measure practice pages with Prev, Next, Loop this page and Play page.
+- **Add to Home Screen.** On iPhone or iPad, open the site in Safari, tap Share, then Add to Home Screen. It opens full screen like an app. A service worker (`sw.js`) caches the app, fonts, piano samples and demo songs.
 
-The site root (`index.html`) opens the **Mario practice player**. The song editor is at [editor.html](editor.html). All asset paths are relative, so the same files work on GitHub Pages.
+Run it locally with `./serve.sh` (or `python3 -m http.server 8765`) and open http://localhost:8765. It has to be served over http, not opened as a file, because it uses JavaScript modules and a service worker.
 
-Or run `python3 -m http.server 8765` and open [http://localhost:8765](http://localhost:8765). The page must be served over `http` (not opened as a file), because it uses JavaScript modules.
+`?song=ode` (or `twinkle`, `mary`, `frere`) opens a specific demo. `songs/index.json` lists the demos. An optional, git-ignored `songs/local.json` adds songs that stay on your own computer.
 
-## Mario practice player
+## MusicXML import
 
-This is a phone- and browser-friendly player for the Super Mario Bros. Main Theme arrangement. Open the site root, or [mario_player.html](mario_player.html).
+`js/musicxml.js` turns a MusicXML score into the song format:
 
-- Plays the song once at 1× by default, with 0.25× / 0.5× / 0.75× / 1× buttons in the bottom bar. Changing speed keeps the audio in sync with the notes.
-- A piano keyboard along the bottom lights each key in that note's pitch color when it sounds. Sharps and flats use a deeper shade of the same color, a double or dashed white outline, and a ♯ or ♭ in the label (on the staff and on the black keys).
-- Practice page by page (about four measures per page) with Prev, Next, Loop this page, and Play page. The label shows "Page X of N".
-- The title slide, sky background, neon hit line, and chord lane (dark while a chord is held, pale otherwise) match the exported video.
+| MusicXML | What the player does |
+|---|---|
+| Parts and staves | Uses the first part with notes, the top staff, and the top voice. Stacked chord notes keep the highest note (the melody). |
+| Key signature | Sets the key (major or minor, guessed from the last bass note if `<mode>` is missing). Each note's real sharp or flat is kept. |
+| Accidentals | Come from each note's `<alter>`. Double sharps and flats are respelled to the nearest simple name. |
+| Ties | Tied notes are merged into one longer note. |
+| Dots, tuplets | Exact lengths come from `<duration>`, so dotted notes and triplets are exact. |
+| Rests, pickup bars | Gaps become rests. A pickup (anacrusis) is padded with a rest so bars and practice pages line up. |
+| Tempo | From `<sound tempo>` or a metronome mark (default 100 BPM). |
+| Time signature | From the first `<time>`. |
+| Chord symbols | From `<harmony>` (C, Dm, G7, Cmaj7, Bdim, Fsus4, N.C. and so on), in any part. |
+| No chord symbols | One simple chord per measure is guessed from all the notes (every part and both hands), using the key's common chords (I, IV, V, V7, ii, vi…). The title slide says "Chords (best guess)". |
+| Lyrics | The first verse is kept. |
+| Transposing instruments | Shown at concert pitch. |
 
-The Mario arrangement is for **home or personal practice only**.
+Not yet supported: repeats and endings are played straight through once; tempo, key and time changes use the first value; grace notes are skipped; only the melody is shown (no left hand yet).
 
-To export a single-pass 1× MP4 with the title slide, keyboard, and crisp letters (rendered at 2× and scaled down):
+The song editor (`editor.html`) can open MusicXML too and shows the converted text. **Download MusicXML** saves any song as MusicXML (`js/musicxml-export.js`), which MuseScore can open.
 
-```bash
-./render.sh songs/mario.txt mario.mp4 --title-slide --scale 2
-```
+Tests: `npm test` runs the import tests (round trips of the demo songs, plus ties, dots, triplets, pickups, voices and chords). `tests/fetch-external.sh` downloads nine real-world files from OpenSheetMusicDisplay's test set (Clementi, Joplin, Schumann, Bach, Beethoven and others) for the same tests. `npm run test:browser` runs the Playwright checks for audio, timing, file opening, pages and offline use.
 
+## Scanning sheet music (experiment, local only)
+
+`tools/scan.sh page.png` reads a photo or scan of sheet music into MusicXML. Open the result in the player with **Open song…**. It can use either of two open-source engines, and both run offline:
+
+- **Audiveris** (AGPL-3.0) read 88–100% of the notes correctly on our test pages, in 4–10 seconds per page.
+- **oemer** (MIT) was erratic: 3–100% correct, and about 2 minutes per page.
+
+It isn't on the website. Audiveris's license doesn't fit a closed-source paid app, and oemer isn't reliable enough yet. See `tools/SCANNING.md` for the full results and license notes.
 
 ## Song format
 
@@ -155,11 +174,11 @@ Type the same format into the text box on the page, or save a `.txt` file and pa
 ./render.sh songs/twinkle.txt demo.mp4
 ```
 
-That writes a 1280×720, 30 fps MP4 with the bell audio mixed in. You can also set size and frame rate:
+That writes a 1280×720, 30 fps MP4 with the real piano sound (the same samples and rules as the live player, rendered offline in `js/pianowav.js`). `--sound bell` brings back the old synthesized bells. You can also set size and frame rate:
 
 ```bash
 ./render.sh songs/mary.txt mary.mp4 --width 1920 --height 1080 --fps 30
-./render.sh songs/mario.txt mario.mp4 --title-slide --scale 2
+./render.sh songs/ode.txt ode.mp4 --title-slide --scale 2
 ```
 
 `--speed` slows both the picture and the audio (0.25, 0.5, 0.75, and 1 are typical). `--title-slide` adds a 5.5-second opening card with the song title, the chords, and the notes. `--speeds 0.5,0.75,1` plays the whole song at each speed, with a short card before Medium and Full Speed. A label such as Slow, Medium, or Full Speed is drawn in the corner; `--label` overrides the default name for a single-speed render.
@@ -171,23 +190,31 @@ A demo render lives at `demo.mp4`. `demo_poster.png` is a still from that video,
 ## Project layout
 
 ```
-index.html          Mario practice player (site root)
-mario_player.html   same player (alias)
-editor.html         song editor / video preview
-css/  js/           page styles and engine
-songs/              public-domain demo songs
-fonts/              Fredoka, Nunito, and Noto Music (SIL Open Font License)
-assets/             background image (island-bg.jpg) and the style reference
-render.sh           export entry point
-render.mjs          Playwright + ffmpeg renderer
+index.html            practice player (site root)
+editor.html           song editor / video preview
+manifest.webmanifest  home-screen app settings
+sw.js                 offline cache (regenerate with: node tools/build-sw.mjs)
+css/  js/             styles and engine
+js/piano.js           live piano (Tone.js Sampler + Salamander samples)
+js/pianowav.js        the same piano, rendered offline for MP4 export
+js/musicxml.js        MusicXML / .mxl import
+js/musicxml-export.js MusicXML export
+js/vendor/            Tone.js and JSZip (MIT), bundled for offline use
+assets/piano/         Salamander Grand Piano samples, A1–C8 (CC-BY 3.0)
+songs/                public-domain demo songs (.txt) and songs/demo/ (MusicXML)
+fonts/                Fredoka, Nunito, and Noto Music (SIL Open Font License)
+tools/                scan.sh (OMR experiment), build-sw.mjs, compare-songs.mjs, demo builders
+tests/                import tests and Playwright browser checks
+render.sh, render.mjs Playwright + ffmpeg video export
 ```
 
 ## What's still rough
 
-- No ties, and lyrics cannot yet span a tied note. Chords are a separate track (or inline markers), not stacked melody notes.
-- Eighth-note flags are simple; notes are not beamed.
-- Only a treble staff, and no key signature is drawn on the staff (the key still drives solfège).
+- Melody only. Imported scores show the top line of the right hand. Two-hand (grand staff) display is the next step.
+- Repeats are not expanded, and tempo, key and time changes use the first value.
+- Eighth-note flags are simple; notes are not beamed. No key signature is drawn on the staff.
 - The in-page player does not export a video by itself; use `render.sh`.
-- Count-in length follows the top number of the time signature (4 beats in 4/4). Pickup measures are just leading rests.
 
-The demo tunes are public domain. Fredoka and Nunito are licensed under the SIL Open Font License.
+## Credits and licenses
+
+See `THIRD_PARTY_NOTICES.md`. In short: Tone.js (MIT), JSZip (MIT, chosen from its MIT/GPLv3 dual license), Salamander Grand Piano samples by Alexander Holm (CC-BY 3.0, credit shown in the player), and the fonts (SIL OFL). The demo melodies are public domain, and our encodings of them are CC0. The repo contains only public-domain or original songs.

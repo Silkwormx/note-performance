@@ -1,6 +1,6 @@
 import { parsePitch, parseDuration, toMidi, parseChordSymbol } from './music.js';
 
-const HEADER = /^(title|tempo|key|time|lookahead)\s*:\s*(.+)$/i;
+const HEADER = /^(title|tempo|key|time|lookahead|chordguess)\s*:\s*(.+)$/i;
 
 export function parseSong(text) {
   const meta = { title: 'Untitled', tempo: 100, key: 'C', time: [4, 4] };
@@ -221,6 +221,10 @@ function applyHeader(meta, key, value, errors, lineNo) {
     } else {
       meta.time = [Number(m[1]), Number(m[2])];
     }
+    return;
+  }
+  if (key === 'chordguess') {
+    meta.chordsGuessed = /^(y|yes|true|1)$/i.test(value);
     return;
   }
   if (key === 'lookahead') {

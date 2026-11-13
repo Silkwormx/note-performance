@@ -1119,7 +1119,7 @@ export function drawTitleSlide(ctx, w, h, song, timeSec, duration = 5.5) {
   ctx.fillStyle = '#6A574B';
   ctx.textAlign = 'left';
   const left = card.x + 56 * L.s;
-  ctx.fillText('Chords', left, y);
+  ctx.fillText(song.meta.chordsGuessed ? 'Chords (best guess)' : 'Chords', left, y);
   y += 28 * L.s;
   let x = left;
   const gap = 12 * L.s;

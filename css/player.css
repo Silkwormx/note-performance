@@ -145,3 +145,21 @@ button.active, .toggle[aria-pressed="true"] {
 }
 
 .home-use a { color: #1fd8ff; }
+
+select {
+  font: inherit;
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--bar-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 10px;
+  max-width: 60vw;
+}
+.status {
+  color: var(--muted);
+  font-size: 0.9rem;
+  flex: 1 1 200px;
+  min-width: 0;
+}
+#credit { color: var(--muted); }

@@ -1,0 +1,28 @@
+# Ode to Joy (Beethoven, Symphony No. 9) - public domain melody
+# Simple beginner arrangement in C, encoded for Note Performance (CC0).
+title: Ode to Joy
+tempo: 100
+key: C
+time: 4/4
+
+chords: C:4 | G:4 | C:4 | G:4
+chords: C:4 | G:4 | C:4 | G:2 C:2
+chords: G:4 | G:2 C:2 | G:4 | C:2 G:2
+chords: C:4 | G:4 | C:4 | G:2 C:2
+
+E4 q | E4 q | F4 q | G4 q
+G4 q | F4 q | E4 q | D4 q
+C4 q | C4 q | D4 q | E4 q
+E4 q. | D4 e | D4 h
+E4 q | E4 q | F4 q | G4 q
+G4 q | F4 q | E4 q | D4 q
+C4 q | C4 q | D4 q | E4 q
+D4 q. | C4 e | C4 h
+D4 q | D4 q | E4 q | C4 q
+D4 q | E4 e | F4 e | E4 q | C4 q
+D4 q | E4 e | F4 e | E4 q | D4 q
+C4 q | D4 q | G3 h
+E4 q | E4 q | F4 q | G4 q
+G4 q | F4 q | E4 q | D4 q
+C4 q | C4 q | D4 q | E4 q
+D4 q. | C4 e | C4 h

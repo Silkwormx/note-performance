@@ -44,9 +44,17 @@ export const KEYS = {
   Cm: { pc: 3, acc: 'flat' },
   Fm: { pc: 5, acc: 'flat' },
   'F#m': { pc: 6, acc: 'sharp' },
+  Cb: { pc: 11, acc: 'flat' },
+  'C#m': { pc: 1, acc: 'sharp' },
+  'G#m': { pc: 8, acc: 'sharp' },
+  'D#m': { pc: 3, acc: 'sharp' },
+  'A#m': { pc: 10, acc: 'sharp' },
+  Bbm: { pc: 10, acc: 'flat' },
+  Ebm: { pc: 3, acc: 'flat' },
+  Abm: { pc: 8, acc: 'flat' },
 };
 
-const MINOR_KEYS = new Set(['Am', 'Em', 'Bm', 'Dm', 'Gm', 'Cm', 'Fm', 'F#m', 'C#m']);
+const MINOR_KEYS = new Set(['Am', 'Em', 'Bm', 'Dm', 'Gm', 'Cm', 'Fm', 'F#m', 'C#m', 'G#m', 'D#m', 'A#m', 'Bbm', 'Ebm', 'Abm']);
 
 export function parsePitch(token) {
   const m = String(token).trim().match(/^([A-G])(#|b)?(\d)$/);

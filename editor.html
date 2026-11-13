@@ -16,7 +16,10 @@
       <div class="top-actions">
         <button type="button" id="btn-twinkle" class="ghost">Load Twinkle</button>
         <button type="button" id="btn-mary" class="ghost">Load Mary</button>
+        <button type="button" id="btn-open-xml" class="ghost">Open MusicXML…</button>
+        <input type="file" id="file-xml" accept=".musicxml,.xml,.mxl,.txt" hidden />
         <button type="button" id="btn-download" class="ghost">Download song.txt</button>
+        <button type="button" id="btn-download-xml" class="ghost">Download MusicXML</button>
       </div>
     </header>
 
@@ -70,9 +73,11 @@
     <section class="export-note">
       <p>To export an MP4 (1280×720, 30 fps, with audio), run this from the project folder:</p>
       <pre>./render.sh songs/twinkle.txt demo.mp4
-./render.sh songs/mario.txt mario.mp4 --title-slide --scale 2</pre>
+./render.sh songs/ode.txt ode.mp4 --title-slide --scale 2</pre>
     </section>
   </div>
+  <script src="js/vendor/tone.js"></script>
+  <script src="js/vendor/jszip.min.js"></script>
   <script type="module" src="js/app.js"></script>
 </body>
 </html>
