@@ -90,7 +90,60 @@ export async function readMusicXmlFile(bytesOrText, filename = '', { JSZip } = {
   return zip.file(path).async('string');
 }
 
-function parsePart(part, tpq) {
+/**
+ * Play order of a part's measures with repeat signs and 1st/2nd endings expanded.
+ * Handles forward/backward repeats (with times="n") and numbered endings ("1", "1, 2").
+ * Returns { list, expanded } where expanded is true when the order differs from the page.
+ */
+export function repeatPlayOrder(part) {
+  const ms = kids(part, 'measure');
+  const info = ms.map((m) => {
+    const o = { forward: false, backward: 0, endingStart: null, endingStop: false };
+    for (const b of kids(m, 'barline')) {
+      const r = kid(b, 'repeat');
+      if (r && r.getAttribute('direction') === 'forward') o.forward = true;
+      if (r && r.getAttribute('direction') === 'backward') o.backward = Math.max(2, parseInt(r.getAttribute('times') || '2', 10) || 2);
+      const e = kid(b, 'ending');
+      if (e) {
+        const type = e.getAttribute('type');
+        const nums = String(e.getAttribute('number') || '').split(/[^0-9]+/).filter(Boolean).map(Number);
+        if (type === 'start') o.endingStart = nums.length ? nums : [1];
+        if (type === 'stop' || type === 'discontinue') o.endingStop = true;
+      }
+    }
+    return o;
+  });
+  if (!info.some((o) => o.forward || o.backward || o.endingStart)) return { list: ms, expanded: false };
+  const endingEnd = (i) => {
+    for (let j = i; j < ms.length; j += 1) {
+      if (info[j].endingStop || info[j].backward) return j;
+      if (j > i && info[j].endingStart) return j - 1;
+    }
+    return ms.length - 1;
+  };
+  const list = [];
+  let start = 0;
+  let pass = 1;
+  let jumped = false;
+  let i = 0;
+  const cap = ms.length * 12;
+  while (i < ms.length && list.length < cap) {
+    const o = info[i];
+    if (o.forward && !jumped) { start = i; pass = 1; }
+    jumped = false;
+    if (o.endingStart && !o.endingStart.includes(pass)) { i = endingEnd(i) + 1; continue; }
+    list.push(ms[i]);
+    if (o.backward) {
+      if (pass < o.backward) { pass += 1; i = start; jumped = true; continue; }
+      pass = 1;
+      start = i + 1;
+    }
+    i += 1;
+  }
+  return { list, expanded: list.length !== ms.length || list.some((m, k) => m !== ms[k]) };
+}
+
+function parsePart(part, tpq, expand = true) {
   let divisions = 1;
   let fifths = null;
   let mode = 'major';
@@ -109,7 +162,8 @@ function parsePart(part, tpq) {
   let sawKeyChange = false;
   let staffCountMax = 1;
 
-  for (const m of kids(part, 'measure')) {
+  const order = expand ? repeatPlayOrder(part) : { list: kids(part, 'measure'), expanded: false };
+  for (const m of order.list) {
     let cursor = 0;
     let maxCursor = 0;
     let lastOnset = 0;
@@ -209,7 +263,7 @@ function parsePart(part, tpq) {
     measureStart += len;
   }
 
-  return { notes, rests, harmonies, measures, measureStart, fifths, mode, modeExplicit, timeSig, tempo, sawRepeat, sawTempoChange, sawTimeChange, sawKeyChange, staffCountMax };
+  return { expandedRepeats: order.expanded, notes, rests, harmonies, measures, measureStart, fifths, mode, modeExplicit, timeSig, tempo, sawRepeat, sawTempoChange, sawTimeChange, sawKeyChange, staffCountMax };
 }
 
 // ---------- main conversion ----------
@@ -254,11 +308,11 @@ export function musicXmlToSong(xmlText, opts = {}) {
     (opts.filename ? opts.filename.replace(/\.(musicxml|xml|mxl)$/i, '').replace(/[_-]+/g, ' ').trim() : '') ||
     'Imported song';
 
-  const P = parsePart(part, tpq);
+  const P = parsePart(part, tpq, opts.expandRepeats !== false);
   const { notes, harmonies, measures, measureStart, sawRepeat, sawTempoChange, sawTimeChange, sawKeyChange, staffCountMax } = P;
   let { fifths, mode, timeSig, tempo } = P;
   // Other parts (e.g. a separate left-hand or accompaniment part) help with chords and missing tempo.
-  const others = parts.filter((p) => p !== part).map((p) => parsePart(p, tpq));
+  const others = parts.filter((p) => p !== part).map((p) => parsePart(p, tpq, opts.expandRepeats !== false));
   const allNotes = notes.concat(...others.map((o) => o.notes));
   if (!tempo) tempo = others.map((o) => o.tempo).find(Boolean) || null;
   if (fifths == null) fifths = others.map((o) => o.fifths).find((f) => f != null) ?? null;
@@ -280,7 +334,8 @@ export function musicXmlToSong(xmlText, opts = {}) {
     warnings.push('No tempo marking found; using 100 BPM.');
   }
   tempo = Math.max(30, Math.min(240, Math.round(tempo)));
-  if (sawRepeat) warnings.push('Repeat signs are played straight through once (repeats are not expanded yet).');
+  if (P.expandedRepeats) warnings.push(`Repeats and 1st/2nd endings are played out in order (${measures.length} bars of playing).`);
+  else if (sawRepeat && opts.expandRepeats === false) warnings.push('Repeat signs are played straight through once (repeat expansion is off).');
   if (sawTempoChange) warnings.push('Tempo changes are ignored; the first tempo is used.');
   if (sawTimeChange) warnings.push('Time signature changes are ignored; the first one is used.');
   if (sawKeyChange) warnings.push('Key changes are shown with the first key signature (the notes are still correct).');

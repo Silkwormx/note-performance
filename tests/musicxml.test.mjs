@@ -134,3 +134,23 @@ if (existsSync(ext)) {
     });
   }
 }
+
+test('repeats and 1st/2nd endings are played out in order', () => {
+  // Synthetic 4-bar tune: |: C | D |1. E :|2. F ||  ->  C D E C D F
+  const bar = (n, step, pre = '', post = '') =>
+    `<measure number="${n}">${n === 1 ? '<attributes><divisions>1</divisions><key><fifths>0</fifths></key><time><beats>4</beats><beat-type>4</beat-type></time></attributes>' : ''}${pre}<note><pitch><step>${step}</step><octave>4</octave></pitch><duration>4</duration><type>whole</type></note>${post}</measure>`;
+  const xml = `<?xml version="1.0"?><score-partwise version="4.0"><part-list><score-part id="P1"><part-name>M</part-name></score-part></part-list><part id="P1">${
+    bar(1, 'C', '<barline location="left"><repeat direction="forward"/></barline>') +
+    bar(2, 'D') +
+    bar(3, 'E', '<barline location="left"><ending number="1" type="start"/></barline>', '<barline location="right"><ending number="1" type="stop"/><repeat direction="backward"/></barline>') +
+    bar(4, 'F', '<barline location="left"><ending number="2" type="start"/></barline>', '<barline location="right"><ending number="2" type="discontinue"/></barline>')
+  }</part></score-partwise>`;
+  const { text, info } = musicXmlToSong(xml, { DOMParser });
+  assert.deepEqual(notesOf(parseSong(text)), ['C4:4', 'D4:4', 'E4:4', 'C4:4', 'D4:4', 'F4:4']);
+  assert.equal(info.measures, 6);
+  const flat = musicXmlToSong(xml, { DOMParser, expandRepeats: false });
+  assert.deepEqual(notesOf(parseSong(flat.text)), ['C4:4', 'D4:4', 'E4:4', 'F4:4']);
+  // A plain backward repeat with no forward sign repeats from the start.
+  const xml2 = xml.replace(/<barline location="left"><repeat direction="forward"\/><\/barline>/, '').replace(/<measure number="4">.*?<\/measure>/, '');
+  assert.deepEqual(notesOf(parseSong(musicXmlToSong(xml2, { DOMParser }).text)), ['C4:4', 'D4:4', 'E4:4', 'C4:4', 'D4:4']);
+});

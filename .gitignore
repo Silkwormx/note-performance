@@ -26,3 +26,6 @@ server/.env
 server/current_url.txt
 server/__pycache__/
 server/testing/__pycache__/
+
+# private, copyrighted material (never commit)
+private/

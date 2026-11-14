@@ -183,7 +183,7 @@ async function openScanResult(result, base) {
     }
     const bytes = new Uint8Array(await (await fetchJobFile(base, result.job, p.mxl)).arrayBuffer());
     const xml = await readMusicXmlFile(bytes, 'scan.mxl');
-    const { info } = musicXmlToSong(xml, { filename: p.name });
+    const { info } = musicXmlToSong(xml, { filename: p.name, expandRepeats: false });
     info.title = sensibleTitle(info.title) || '';
     imports.push({ info, sheet: p.sheet, pageIndex: pages.length - 1 });
   }
@@ -206,7 +206,7 @@ async function openXmlFile(file) {
   try {
     const bytes = new Uint8Array(await file.arrayBuffer());
     const xml = await readMusicXmlFile(bytes, file.name);
-    const { info } = musicXmlToSong(xml, { filename: file.name });
+    const { info } = musicXmlToSong(xml, { filename: file.name, expandRepeats: false });
     state.pages = [];
     startFix(docFromImports([{ info }]));
   } catch (err) {
@@ -726,7 +726,7 @@ window.Scan = {
   state,
   openScanResult,
   openXmlText: (xml, name = 'test.musicxml') => {
-    const { info } = musicXmlToSong(xml, { filename: name });
+    const { info } = musicXmlToSong(xml, { filename: name, expandRepeats: false });
     state.pages = [];
     startFix(docFromImports([{ info }]));
   },

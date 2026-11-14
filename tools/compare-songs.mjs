@@ -11,9 +11,9 @@ async function load(p) {
   if (p.endsWith('.txt')) return parseSong(readFileSync(p, 'utf8'));
   const buf = readFileSync(p);
   const xml = await readMusicXmlFile(p.endsWith('.mxl') ? buf : buf.toString('utf8'), p, { JSZip });
-  return parseSong(musicXmlToSong(xml, { DOMParser }).text);
+  return parseSong(musicXmlToSong(xml, { DOMParser, expandRepeats: !process.argv.includes("--page-order") }).text);
 }
-const [a, b] = process.argv.slice(2);
+const [a, b] = process.argv.slice(2).filter((x) => !x.startsWith("--"));
 const truth = (await load(a)).events.filter((e) => e.type === 'note');
 const scan = (await load(b)).events.filter((e) => e.type === 'note');
 // alignment on pitch (midi); then count rhythm matches among aligned pairs
