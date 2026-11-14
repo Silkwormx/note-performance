@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Note Player" />
+  <meta name="theme-color" content="#0e1418" />
+  <title>Scan sheet music — Practice Player</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="assets/icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
+  <link rel="stylesheet" href="css/player.css" />
+  <link rel="stylesheet" href="css/scan.css" />
+</head>
+<body class="scan-page">
+  <!-- Step 1: take or pick pictures -->
+  <section id="step-scan" class="step">
+    <header class="scan-head">
+      <h1>Scan sheet music</h1>
+      <a href="index.html" class="btn">Player</a>
+    </header>
+    <p class="hint">Lay the page flat in good light, fill the screen with it, and hold the phone straight above. One photo per page.</p>
+    <div class="pick-row">
+      <button type="button" id="btn-camera" class="primary big">📷 Take a photo</button>
+      <button type="button" id="btn-files" class="big">Choose pictures or a PDF</button>
+      <input type="file" id="in-camera" accept="image/*" capture="environment" hidden />
+      <input type="file" id="in-files" accept="image/*,application/pdf,.pdf" multiple hidden />
+    </div>
+    <ol id="page-list" class="page-list" aria-label="Pages to scan"></ol>
+    <label class="check"><input type="checkbox" id="opt-clean" checked /> Clean up the photo first (straighten, fix shadows)</label>
+    <div class="pick-row">
+      <button type="button" id="btn-read" class="primary big" disabled>Read the music</button>
+    </div>
+    <p id="scan-status" class="status-line" aria-live="polite"></p>
+    <details id="server-box" class="server-box">
+      <summary>Scanner connection</summary>
+      <p id="server-state" class="small"></p>
+      <label>Scanner address <input type="url" id="api-url" placeholder="https://….trycloudflare.com" autocomplete="off" /></label>
+      <label>Access key <input type="text" id="api-key" autocomplete="off" spellcheck="false" /></label>
+      <button type="button" id="btn-save-server">Save &amp; test</button>
+    </details>
+    <p class="small">Already have a MusicXML file? <button type="button" id="btn-open-xml" class="linkish">Open it here</button> to check and fix the notes.
+      <input type="file" id="in-xml" accept=".musicxml,.xml,.mxl" hidden /></p>
+  </section>
+
+  <!-- Step 2: fix the notes -->
+  <section id="step-fix" class="step" hidden>
+    <header class="scan-head">
+      <button type="button" id="btn-back" class="ghosty">← Scan</button>
+      <h1>Fix the notes</h1>
+      <button type="button" id="btn-play-it" class="primary">▶ Play it</button>
+    </header>
+    <div class="meta-row">
+      <label>Title <input type="text" id="f-title" /></label>
+      <label>Tempo <input type="number" id="f-tempo" min="30" max="240" step="1" /></label>
+      <label>Key <select id="f-key"></select></label>
+      <span id="f-time" class="pill"></span>
+    </div>
+    <div id="issues" class="issues" aria-live="polite"></div>
+    <div class="fix-layout">
+      <div class="pane image-pane" id="image-pane">
+        <div class="pane-head">
+          <span id="img-page-label">Page 1</span>
+          <div class="seg" role="group" aria-label="Which picture">
+            <button type="button" data-layer="sheet" class="active">Scanned</button>
+            <button type="button" data-layer="cleaned">Cleaned</button>
+            <button type="button" data-layer="original">Photo</button>
+          </div>
+          <span class="seg" role="group" aria-label="Page">
+            <button type="button" id="img-prev" aria-label="Previous page">‹</button>
+            <button type="button" id="img-next" aria-label="Next page">›</button>
+          </span>
+        </div>
+        <div class="img-wrap" id="img-wrap"><img id="page-img" alt="Scanned page" /><div id="img-boxes"></div></div>
+        <p id="no-image" class="small" hidden>No picture for this song (opened from a file).</p>
+      </div>
+      <div class="pane score-pane">
+        <div id="score-wrap" class="score-wrap"><svg id="score" xmlns="http://www.w3.org/2000/svg"></svg></div>
+      </div>
+    </div>
+    <div class="toolbar" id="toolbar" role="toolbar" aria-label="Change the selected note">
+      <div class="tb-group" aria-label="Pitch">
+        <button type="button" data-act="up" title="Higher (↑)">▲</button>
+        <button type="button" data-act="down" title="Lower (↓)">▼</button>
+        <button type="button" data-act="sharp" title="Sharp">♯</button>
+        <button type="button" data-act="flat" title="Flat">♭</button>
+        <button type="button" data-act="natural" title="Natural">♮</button>
+      </div>
+      <div class="tb-group" aria-label="Length">
+        <button type="button" data-len="4" title="Whole (4 beats)">𝅝</button>
+        <button type="button" data-len="2" title="Half (2 beats)">𝅗𝅥</button>
+        <button type="button" data-len="1" title="Quarter (1 beat)">♩</button>
+        <button type="button" data-len="0.5" title="Eighth (½ beat)">♪</button>
+        <button type="button" data-len="0.25" title="Sixteenth (¼ beat)">𝅘𝅥𝅯</button>
+        <button type="button" data-act="dot" title="Dotted (half again as long)">·</button>
+      </div>
+      <div class="tb-group" aria-label="Add or remove">
+        <button type="button" data-act="add-note" title="Add a note after this one">+♩</button>
+        <button type="button" data-act="add-rest" title="Add a rest after this one">+𝄽</button>
+        <button type="button" data-act="rest-toggle" title="Turn note into rest (or back)">♩⇄𝄽</button>
+        <button type="button" data-act="delete" title="Delete (Del)">🗑</button>
+        <button type="button" data-act="undo" title="Undo">↶</button>
+      </div>
+      <div class="tb-group grow">
+        <label class="inline">Words <input type="text" id="f-lyric" placeholder="lyric" /></label>
+        <label class="inline">Chords bar <span id="chord-bar-no">–</span> <input type="text" id="f-chords" placeholder="C  G7" /></label>
+      </div>
+      <p id="sel-label" class="small sel-label">Tap a note to change it. Orange bars need a look.</p>
+    </div>
+    <div class="pick-row end-row">
+      <button type="button" id="btn-dl-xml">Download MusicXML</button>
+      <button type="button" id="btn-dl-txt">Download song text</button>
+      <button type="button" id="btn-play-it-2" class="primary big">▶ Play it</button>
+    </div>
+  </section>
+
+  <script src="js/vendor/tone.js"></script>
+  <script src="js/vendor/jszip.min.js"></script>
+  <script type="module" src="js/scan.js"></script>
+  <script>
+    if ('serviceWorker' in navigator && location.protocol !== 'file:' && !/[?&]nosw/.test(location.search)) {
+      navigator.serviceWorker.register('sw.js').catch((e) => console.warn('Offline cache not available', e));
+    }
+  </script>
+</body>
+</html>

@@ -163,3 +163,17 @@ select {
   min-width: 0;
 }
 #credit { color: var(--muted); }
+
+a.btn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid #3a4a54;
+  background: #243038;
+  border-radius: 999px;
+  color: var(--ink);
+  font-family: Fredoka, Nunito, sans-serif;
+  font-weight: 650;
+  text-decoration: none;
+}

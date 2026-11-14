@@ -1,0 +1,13 @@
+node_modules
+.git
+verify
+tests/external
+scan-out
+*.mp4
+mario*
+kirby*
+songs/mario.txt
+songs/kirby.txt
+songs/local.json
+server/.env
+server/current_url.txt

@@ -42,16 +42,20 @@ Not yet supported: repeats and endings are played straight through once; tempo, 
 
 The song editor (`editor.html`) can open MusicXML too and shows the converted text. **Download MusicXML** saves any song as MusicXML (`js/musicxml-export.js`), which MuseScore can open.
 
-Tests: `npm test` runs the import tests (round trips of the demo songs, plus ties, dots, triplets, pickups, voices and chords). `tests/fetch-external.sh` downloads nine real-world files from OpenSheetMusicDisplay's test set (Clementi, Joplin, Schumann, Bach, Beethoven and others) for the same tests. `npm run test:browser` runs the Playwright checks for audio, timing, file opening, pages and offline use.
+Tests: `npm test` runs the import and "Fix the notes" tests (round trips of the demo songs, plus ties, dots, triplets, pickups, voices and chords). `tests/fetch-external.sh` downloads nine real-world files from OpenSheetMusicDisplay's test set (Clementi, Joplin, Schumann, Bach, Beethoven and others) for the same tests. `npm run test:browser` runs the Playwright checks for audio, timing, file opening, pages and offline use. `node tests/scan-test.mjs` checks the scan page and editor (set `BASE`, `SCAN_KEY` and `PHOTO` to include a real scan).
 
-## Scanning sheet music (experiment, local only)
+## Scan sheet music (photo → song)
 
-`tools/scan.sh page.png` reads a photo or scan of sheet music into MusicXML. Open the result in the player with **Open song…**. It can use either of two open-source engines, and both run offline:
+`scan.html` (the **Scan sheet music** link under the player) turns a photo of printed sheet music into a song for the player:
 
-- **Audiveris** (AGPL-3.0) read 88–100% of the notes correctly on our test pages, in 4–10 seconds per page.
-- **oemer** (MIT) was erratic: 3–100% correct, and about 2 minutes per page.
+1. **Take a photo** with the phone's back camera (one per page), or choose pictures or a PDF.
+2. **Read the music.** The pictures go to the scan backend (`server/`). It straightens and cleans them up with OpenCV, then reads them with Audiveris. It takes about 10–40 seconds per page.
+3. **Fix the notes.** The scanned page appears next to the notes the scanner found, drawn on a staff. Tap a note to move it up or down (▲▼ follow the key signature), add or remove a sharp, flat or natural, change its length (whole to sixteenth, dotted), turn it into a rest, delete it, or add a note or rest after it. Type the chord names for each bar (`C G7` splits the bar evenly; `C:3 G7:1` sets the beats). Edit the words under a note, too. Orange bars need a look: either the beats don't add up to the time signature (**Fill with rest** fixes a short bar), or the scanner wasn't sure about some symbols. Those spots are circled on the picture. Tap a bar on the picture to jump to it. **Undo** works for every change. The work is saved on the device.
+4. **▶ Play it** opens the song in the player, with speeds, practice pages and loops. **← Fix notes** goes back. You can also download it as MusicXML or song text.
 
-It isn't on the website. Audiveris's license doesn't fit a closed-source paid app, and oemer isn't reliable enough yet. See `tools/SCANNING.md` for the full results and license notes.
+Already have a MusicXML file? **Open it here** on the scan page goes straight to step 3, with no backend needed.
+
+The backend can't run on GitHub Pages (which only hosts static files). Run it with `server/start.sh` on a computer or a small server. See **[server/README.md](server/README.md)** for setup, the phone link, Docker, and why it stays a separate program (Audiveris is AGPL-3.0). Accuracy on test photos is in `tools/SCANNING.md`. `tools/scan.sh page.png` still does the same from the command line, with either Audiveris or oemer.
 
 ## Song format
 
@@ -203,8 +207,10 @@ js/vendor/            Tone.js and JSZip (MIT), bundled for offline use
 assets/piano/         Salamander Grand Piano samples, A1–C8 (CC-BY 3.0)
 songs/                public-domain demo songs (.txt) and songs/demo/ (MusicXML)
 fonts/                Fredoka, Nunito, and Noto Music (SIL Open Font License)
-tools/                scan.sh (OMR experiment), build-sw.mjs, compare-songs.mjs, demo builders
-tests/                import tests and Playwright browser checks
+scan.html             scan sheet music + "Fix the notes" editor (js/scan.js, js/scoreedit.js)
+server/               scan backend: FastAPI + OpenCV cleanup + Audiveris (start.sh, Dockerfile)
+tools/                scan.sh (command-line OMR), build-sw.mjs, compare-songs.mjs, demo builders
+tests/                import + editor tests, Playwright checks (browser-test.mjs, scan-test.mjs)
 render.sh, render.mjs Playwright + ffmpeg video export
 ```
 
@@ -214,6 +220,7 @@ render.sh, render.mjs Playwright + ffmpeg video export
 - Repeats are not expanded, and tempo, key and time changes use the first value.
 - Eighth-note flags are simple; notes are not beamed. No key signature is drawn on the staff.
 - The in-page player does not export a video by itself; use `render.sh`.
+- Scanning needs the backend running somewhere (`server/start.sh`). Its quick-tunnel address changes on every restart. Dark or blurry photos still lose notes (see `tools/SCANNING.md`). The editor fixes one melody line, not both hands. Notes aren't beamed there either.
 
 ## Credits and licenses
 

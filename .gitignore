@@ -22,3 +22,7 @@ songs/local.json
 # Downloaded test files and scan experiments
 tests/external/
 scan-out/
+server/.env
+server/current_url.txt
+server/__pycache__/
+server/testing/__pycache__/

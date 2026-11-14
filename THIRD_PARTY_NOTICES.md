@@ -13,7 +13,17 @@ Demo songs (`songs/*.txt`, `songs/demo/*`): public-domain melodies (traditional,
 
 CC-BY 3.0 attribution: "Salamander Grand Piano" by Alexander Holm, https://creativecommons.org/licenses/by/3.0/. Changes: trimmed, faded and re-encoded.
 
-## Scanning experiment (not shipped, local tool only)
+## Scan backend (`server/`, runs as its own program, not part of the web app)
+
+| Component | License | Notes |
+|---|---|---|
+| Audiveris 5.11 | AGPL-3.0 | Downloaded by `server/install.sh` / the Dockerfile and run as a separate process. Not bundled in the repo or the web app. See `server/README.md` for why it stays separate from any paid app. |
+| Tesseract `eng.traineddata` | Apache-2.0 | OCR data so Audiveris reads chord names and lyrics. Downloaded at install. |
+| FastAPI, uvicorn, python-multipart | MIT / BSD-3-Clause / Apache-2.0 | |
+| OpenCV (opencv-python-headless), NumPy, Pillow | Apache-2.0 / BSD-3-Clause / MIT-CMU | |
+| cloudflared | Apache-2.0 | Free quick tunnel to reach the backend from a phone. |
+
+## Scanning tools (local only)
 
 | Tool | License | Notes for a paid app |
 |---|---|---|

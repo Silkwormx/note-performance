@@ -553,6 +553,28 @@ const api = {
 window.Player = api;
 window.MarioPlayer = api; // older scripts
 
+function loadScannedSong() {
+  try {
+    const raw = localStorage.getItem('np-scan-song');
+    if (!raw) return null;
+    const v = JSON.parse(raw);
+    return v && typeof v.text === 'string' ? v : null;
+  } catch {
+    return null;
+  }
+}
+
+function addBackToScanLink() {
+  const row = els.songSelect?.parentElement;
+  if (!row || document.getElementById('back-to-scan')) return;
+  const a = document.createElement('a');
+  a.id = 'back-to-scan';
+  a.href = 'scan.html#fix';
+  a.className = 'btn';
+  a.textContent = '← Fix notes';
+  row.appendChild(a);
+}
+
 async function boot() {
   sizeCanvas();
   wireUi();
@@ -560,8 +582,17 @@ async function boot() {
   try {
     const list = await loadSongList();
     const want = params.get('song') || document.body.dataset.song || list[0]?.id;
-    const entry = list.find((s) => s.id === want) || list[0];
-    if (entry) await loadSongEntry(entry);
+    // Songs fixed on the scan page are handed over in localStorage ("Play it").
+    const saved = want === 'scan' ? loadScannedSong() : null;
+    if (saved) {
+      const song = parseSong(saved.text);
+      song.sourceText = saved.text;
+      useSong(song, { id: 'scan', status: 'From your scan' });
+      addBackToScanLink();
+    } else {
+      const entry = list.find((s) => s.id === want) || list[0];
+      if (entry) await loadSongEntry(entry);
+    }
   } catch (err) {
     console.error(err);
     setStatus(`Couldn't load the song: ${err.message}`);

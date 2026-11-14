@@ -7,7 +7,7 @@
   "scripts": {
     "start": "python3 -m http.server 8765",
     "render": "node render.mjs",
-    "test": "node --test tests/musicxml.test.mjs",
+    "test": "node --test tests/musicxml.test.mjs tests/scoreedit.test.mjs",
     "test:browser": "node tests/browser-test.mjs",
     "build:sw": "node tools/build-sw.mjs",
     "build:demos": "node tools/make-demo-musicxml.mjs"

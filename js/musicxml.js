@@ -205,7 +205,7 @@ function parsePart(part, tpq) {
     let len = maxCursor;
     if (!implicit && len < nominal && measures.length > 0) len = nominal; // underfull measures keep the bar line grid
     if (len <= 0) len = nominal;
-    measures.push({ start: measureStart, len, nominal, implicit, number: m.getAttribute('number') });
+    measures.push({ start: measureStart, len, nominal, implicit, content: maxCursor, number: m.getAttribute('number') });
     measureStart += len;
   }
 
@@ -302,6 +302,7 @@ export function musicXmlToSong(xmlText, opts = {}) {
   const lines = [];
   const totalTicks = measureStart;
   const tokensByMeasure = measures.map(() => []);
+  const itemsByMeasure = measures.map(() => []);
   const measureAt = (tick) => {
     let lo = 0;
     for (let i = 0; i < measures.length; i += 1) if (measures[i].start <= tick) lo = i;
@@ -315,16 +316,24 @@ export function musicXmlToSong(xmlText, opts = {}) {
       const end = Math.min(to, measures[mi].start + measures[mi].len);
       if (end <= t) break;
       tokensByMeasure[mi].push(`r ${beatsToken(end - t, tpq)}`);
+      itemsByMeasure[mi].push({ rest: true, beats: (end - t) / tpq });
       t = end;
     }
   };
+  // Structured copy of the same line, bar by bar, for the "fix the notes" editor.
+  const pushRestItem = (mi, ticks) => itemsByMeasure[mi].push({ rest: true, beats: ticks / tpq });
   let t = 0;
-  if (shift) tokensByMeasure[0].push(`r ${beatsToken(shift, tpq)}`);
+  if (shift) {
+    tokensByMeasure[0].push(`r ${beatsToken(shift, tpq)}`);
+    pushRestItem(0, shift);
+  }
   for (const n of melodyTies) {
     if (n.on > t) pushRest(t, n.on);
     const tok = spell(n, preferFlat);
     const lyric = n.lyric ? ` "${n.lyric}"` : '';
-    tokensByMeasure[measureAt(n.on)].push(`${tok} ${beatsToken(n.dur, tpq)}${lyric}`);
+    const mi = measureAt(n.on);
+    tokensByMeasure[mi].push(`${tok} ${beatsToken(n.dur, tpq)}${lyric}`);
+    itemsByMeasure[mi].push({ pitch: tok, midi: n.midi, beats: n.dur / tpq, lyric: n.lyric || '' });
     t = n.on + n.dur;
   }
   if (t < totalTicks) pushRest(t, totalTicks);
@@ -362,6 +371,41 @@ export function musicXmlToSong(xmlText, opts = {}) {
     void ct;
   }
 
+  // Per-bar view (chords split at bar lines) for the editor.
+  const bars = measures.map((m, i) => {
+    const barStart = i === 0 ? 0 : m.start + shift;
+    const barLen = i === 0 ? m.len + shift : m.len;
+    return {
+      number: m.number || String(i + 1),
+      index: i,
+      nominalBeats: m.nominal / tpq,
+      contentBeats: (i === 0 ? m.content + shift : m.content) / tpq,
+      pickup: i === 0 && shift > 0,
+      startBeat: barStart / tpq,
+      beats: barLen / tpq,
+      items: itemsByMeasure[i],
+      chords: [],
+    };
+  });
+  if (chordSeq.length) {
+    const segs = [];
+    const firstAt = chordSeq[0].at;
+    if (firstAt + shift > 0) segs.push({ name: 'N.C.', from: 0, to: firstAt + shift });
+    chordSeq.forEach((h, i) => {
+      const next = i + 1 < chordSeq.length ? chordSeq[i + 1].at : totalTicks;
+      if (next > h.at) segs.push({ name: h.silent ? 'N.C.' : h.name, from: h.at + shift, to: next + shift });
+    });
+    for (const b of bars) {
+      const s0 = b.startBeat * tpq;
+      const e0 = s0 + b.beats * tpq;
+      for (const g of segs) {
+        const s1 = Math.max(s0, g.from);
+        const e1 = Math.min(e0, g.to);
+        if (e1 > s1) b.chords.push({ name: g.name, beats: (e1 - s1) / tpq, cont: g.from < s0 });
+      }
+    }
+  }
+
   const head = [
     `# Imported from MusicXML${opts.filename ? ` (${opts.filename})` : ''}`,
     `title: ${title.replace(/\s+/g, ' ').trim()}`,
@@ -394,6 +438,9 @@ export function musicXmlToSong(xmlText, opts = {}) {
       notes: melodyTies.length,
       chordsFrom,
       chords: chordSeq.length,
+      fifths,
+      mode,
+      bars,
       warnings,
     },
   };

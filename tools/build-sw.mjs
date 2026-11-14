@@ -5,7 +5,7 @@ import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from '
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 
-const files = ['./', 'index.html', 'editor.html', 'manifest.webmanifest'];
+const files = ['./', 'index.html', 'editor.html', 'scan.html', 'manifest.webmanifest'];
 const dirs = ['css', 'js', 'fonts', 'assets/piano', 'assets/icons', 'songs/demo'];
 function walk(d) {
   for (const f of readdirSync(d).sort()) {
@@ -38,7 +38,10 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const req = event.request;
-  if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
+  const url = new URL(req.url);
+  if (req.method !== 'GET' || url.origin !== self.location.origin) return;
+  // The scan backend's API is always live (never cached).
+  if (url.pathname.includes('/api/')) return;
   // App files: cache first (works offline), falling back to the network.
   // Anything else (e.g. songs/local.json): network first, cached copy when offline.
   event.respondWith(
